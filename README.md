@@ -44,12 +44,30 @@ En Windows:
 python -m venv .venv
 ```
 
+En macOS o Linux:
+
+```bash
+python3 -m venv .venv
+```
+
 ### 4. Activar el entorno virtual
 
 En Windows PowerShell:
 
-```bash
+```powershell
 .venv\Scripts\Activate.ps1
+```
+
+En Windows CMD:
+
+```cmd
+.venv\Scripts\activate
+```
+
+En macOS o Linux:
+
+```bash
+source .venv/bin/activate
 ```
 
 ### 5. Instalar Flask
@@ -58,10 +76,22 @@ En Windows PowerShell:
 pip install flask
 ```
 
+En macOS o Linux también puede ser:
+
+```bash
+pip3 install flask
+```
+
 ### 6. Ejecutar la API
 
 ```bash
 python app.py
+```
+
+En macOS o Linux, si es necesario:
+
+```bash
+python3 app.py
 ```
 
 La API quedará disponible en:
@@ -74,7 +104,7 @@ http://127.0.0.1:5000
 
 El proyecto utiliza SQLite para almacenar los avistamientos.
 
-La base de datos se crea automáticamente al ejecutar la aplicación por primera vez.
+La base de datos se crea automáticamente al ejecutar la aplicación.
 
 El archivo utilizado es:
 
@@ -107,7 +137,7 @@ Obtiene todos los avistamientos registrados.
 Ejemplo:
 
 ```bash
-curl.exe http://127.0.0.1:5000/avistamientos
+curl http://127.0.0.1:5000/avistamientos
 ```
 
 Respuesta:
@@ -133,7 +163,7 @@ Obtiene un avistamiento específico utilizando su ID.
 Ejemplo:
 
 ```bash
-curl.exe http://127.0.0.1:5000/avistamientos/1
+curl http://127.0.0.1:5000/avistamientos/1
 ```
 
 Si el avistamiento no existe:
@@ -162,7 +192,7 @@ Los campos requeridos son:
 Ejemplo:
 
 ```bash
-curl.exe -X POST http://127.0.0.1:5000/avistamientos -H "Content-Type: application/json" --data "{\"especie\":\"Colibrí\",\"lugar\":\"Parque El Virrey\",\"fecha\":\"2026-10-06\",\"observador\":\"Ana\"}"
+curl -X POST http://127.0.0.1:5000/avistamientos -H "Content-Type: application/json" -d "{\"especie\":\"Colibrí\",\"lugar\":\"Parque El Virrey\",\"fecha\":\"2026-10-06\",\"observador\":\"Ana\"}"
 ```
 
 Respuesta:
@@ -198,7 +228,7 @@ Permite actualizar un avistamiento existente.
 Ejemplo:
 
 ```bash
-curl.exe -X PUT http://127.0.0.1:5000/avistamientos/1 -H "Content-Type: application/json" --data "{\"especie\":\"Colibrí\",\"lugar\":\"Jardín Botánico\",\"fecha\":\"2026-10-07\",\"observador\":\"Ana\"}"
+curl -X PUT http://127.0.0.1:5000/avistamientos/1 -H "Content-Type: application/json" -d "{\"especie\":\"Colibrí\",\"lugar\":\"Jardín Botánico\",\"fecha\":\"2026-10-07\",\"observador\":\"Ana\"}"
 ```
 
 Respuesta:
@@ -232,7 +262,7 @@ Permite eliminar un avistamiento utilizando su ID.
 Ejemplo:
 
 ```bash
-curl.exe -X DELETE http://127.0.0.1:5000/avistamientos/1
+curl -X DELETE http://127.0.0.1:5000/avistamientos/1
 ```
 
 Respuesta:
@@ -264,7 +294,7 @@ Muestra la cantidad de avistamientos registrados por cada especie.
 Ejemplo:
 
 ```bash
-curl.exe http://127.0.0.1:5000/avistamientos/resumen
+curl http://127.0.0.1:5000/avistamientos/resumen
 ```
 
 Respuesta:
@@ -312,7 +342,7 @@ https://github.com/lunaa06/api-avistamientos
 
 ## IA utilizada
 
-Para el desarrollo de este proyecto se utilizó Chat gpt y Gemini como herramientas de apoyo para comprender conceptos, estructurar el código, realizar pruebas y solucionar errores durante el desarrollo.
+Para el desarrollo de este proyecto se utilizó ChatGPT (GPT-5.6) y Gemini (3.6 Flash lite ) como herramientas de apoyo para comprender conceptos, estructurar el código, realizar pruebas y solucionar errores durante el desarrollo.
 
 La herramienta de IA fue utilizada como apoyo, comprendiendo y verificando el funcionamiento del código implementado.
 
