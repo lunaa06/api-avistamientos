@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+
+datos.json
+actualizar.json
