@@ -1,7 +1,9 @@
 from flask import Flask, request
 from database import conectar, crear_tabla
+from validador import ValidadorDeAvistamiento
 
 app = Flask(__name__)
+validador = ValidadorDeAvistamiento()
 
 
 @app.route("/")
@@ -41,20 +43,18 @@ def obtener_avistamiento(id):
     return dict(avistamiento), 200
 
 
+
 @app.route("/avistamientos/<int:id>", methods=["PUT"])
 def actualizar_avistamiento(id):
     datos = request.get_json(silent=True)
 
-    if datos is None:
-        return {"error": "No se recibió un JSON válido"}, 400
+    error = validador.validar(datos)
 
-    campos = ["especie", "lugar", "fecha", "observador"]
-
-    for campo in campos:
-        if campo not in datos or not datos[campo]:
-            return {"error": f"Falta el campo: {campo}"}, 400
+    if error:
+        return {"error": error}, 400
 
     conexion = conectar()
+
 
     avistamiento = conexion.execute(
         "SELECT * FROM avistamientos WHERE id = ?",
@@ -113,22 +113,20 @@ def eliminar_avistamiento(id):
 
     return {"mensaje": "Avistamiento eliminado correctamente"}, 200
 
+
 @app.route("/avistamientos", methods=["POST"])
 def crear_avistamiento():
     datos = request.get_json(silent=True)
 
     print("DATOS RECIBIDOS:", datos)
 
-    if datos is None:
-        return {"error": "No se recibió un JSON válido"}, 400
+    error = validador.validar(datos)
 
-    campos = ["especie", "lugar", "fecha", "observador"]
-
-    for campo in campos:
-        if campo not in datos or not datos[campo]:
-            return {"error": f"Falta el campo: {campo}"}, 400
+    if error:
+        return {"error": error}, 400
 
     conexion = conectar()
+
 
     cursor = conexion.execute(
         """
