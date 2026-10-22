@@ -2,7 +2,7 @@
 
 ## Descripción
 
-Se creó una API REST que permite registrar y consultar avistamientos de aves.
+Se creó una API REST que permite registrar, consultar, actualizar y eliminar avistamientos de aves, además de consultar un resumen de los registros por especie.
 
 Cada avistamiento contiene la siguiente información:
 
@@ -12,7 +12,7 @@ Cada avistamiento contiene la siguiente información:
 - Fecha
 - Observador
 
-El proyecto fue desarrollado utilizando Python, Flask y SQLite.
+El proyecto fue desarrollado utilizando Python, Flask y SQLite. También cuenta con un validador que comprueba los datos antes de crear o actualizar un registro.
 
 ## Tecnologías utilizadas
 
@@ -21,6 +21,8 @@ El proyecto fue desarrollado utilizando Python, Flask y SQLite.
 - SQLite
 - JSON
 - REST API
+- Pytest
+- pytest-cov
 
 ## Instalación
 
@@ -40,7 +42,7 @@ cd api-avistamientos
 
 En Windows:
 
-```bash
+```powershell
 python -m venv .venv
 ```
 
@@ -70,16 +72,10 @@ En macOS o Linux:
 source .venv/bin/activate
 ```
 
-### 5. Instalar Flask
+### 5. Instalar las dependencias
 
 ```bash
-pip install flask
-```
-
-En macOS o Linux también puede ser:
-
-```bash
-pip3 install flask
+python -m pip install Flask pytest pytest-cov
 ```
 
 ### 6. Ejecutar la API
@@ -104,7 +100,7 @@ http://127.0.0.1:5000
 
 El proyecto utiliza SQLite para almacenar los avistamientos.
 
-La base de datos se crea automáticamente al ejecutar la aplicación.
+La tabla se crea automáticamente al ejecutar la aplicación directamente con `python app.py`.
 
 El archivo utilizado es:
 
@@ -112,13 +108,7 @@ El archivo utilizado es:
 avistamientos.db
 ```
 
-La tabla principal se llama:
-
-```text
-avistamientos
-```
-
-Y contiene los siguientes campos:
+La tabla principal se llama `avistamientos` y contiene los siguientes campos:
 
 - `id`
 - `especie`
@@ -126,9 +116,34 @@ Y contiene los siguientes campos:
 - `fecha`
 - `observador`
 
+## Validación de datos
+
+Antes de crear o actualizar un avistamiento, la API comprueba que los datos cumplan las siguientes reglas:
+
+- La especie debe tener entre 3 y 50 caracteres.
+- La fecha debe tener el formato `AAAA-MM-DD`.
+- La fecha debe ser válida y no puede ser posterior al día actual.
+- El lugar no puede estar vacío.
+- El observador no puede estar vacío.
+- El cuerpo recibido debe tener una estructura de datos válida.
+
+Cuando los datos no cumplen las reglas, la API responde con el código HTTP `400` y un mensaje que explica el error.
+
 ## Endpoints
 
-### GET /avistamientos
+### GET `/`
+
+Comprueba que la API esté funcionando.
+
+**Respuesta:** `200 OK`
+
+```json
+{
+  "mensaje": "API de avistamientos funcionando"
+}
+```
+
+### GET `/avistamientos`
 
 Obtiene todos los avistamientos registrados.
 
@@ -140,21 +155,7 @@ Ejemplo:
 curl http://127.0.0.1:5000/avistamientos
 ```
 
-Respuesta:
-
-```json
-[
-    {
-        "id": 1,
-        "especie": "Colibrí",
-        "lugar": "Parque El Virrey",
-        "fecha": "2026-10-06",
-        "observador": "Ana"
-    }
-]
-```
-
-### GET /avistamientos/{id}
+### GET `/avistamientos/{id}`
 
 Obtiene un avistamiento específico utilizando su ID.
 
@@ -166,96 +167,49 @@ Ejemplo:
 curl http://127.0.0.1:5000/avistamientos/1
 ```
 
-Si el avistamiento no existe:
-
-**Respuesta:** `404 Not Found`
+Si el avistamiento no existe, responde `404 Not Found`:
 
 ```json
 {
-    "error": "Avistamiento no encontrado"
+  "error": "Avistamiento no encontrado"
 }
 ```
 
-### POST /avistamientos
+### POST `/avistamientos`
 
 Permite registrar un nuevo avistamiento.
 
-Los campos requeridos son:
-
-- `especie`
-- `lugar`
-- `fecha`
-- `observador`
+Los campos requeridos son `especie`, `lugar`, `fecha` y `observador`.
 
 **Respuesta:** `201 Created`
 
 Ejemplo:
 
 ```bash
-curl -X POST http://127.0.0.1:5000/avistamientos -H "Content-Type: application/json" -d "{\"especie\":\"Colibrí\",\"lugar\":\"Parque El Virrey\",\"fecha\":\"2026-10-06\",\"observador\":\"Ana\"}"
+curl -X POST http://127.0.0.1:5000/avistamientos -H "Content-Type: application/json" -d "{\"especie\":\"Colibrí\",\"lugar\":\"Parque El Virrey\",\"fecha\":\"2026-10-21\",\"observador\":\"Ana\"}"
 ```
 
-Respuesta:
+La respuesta contiene el registro creado, incluido su identificador.
 
-```json
-{
-    "id": 1,
-    "especie": "Colibrí",
-    "lugar": "Parque El Virrey",
-    "fecha": "2026-10-06",
-    "observador": "Ana"
-}
-```
+Si los datos no cumplen las reglas de validación, responde `400 Bad Request`.
 
-Si falta alguno de los campos requeridos:
+### PUT `/avistamientos/{id}`
 
-**Respuesta:** `400 Bad Request`
-
-Ejemplo:
-
-```json
-{
-    "error": "Falta el campo: especie"
-}
-```
-
-### PUT /avistamientos/{id}
-
-Permite actualizar un avistamiento existente.
+Permite actualizar un avistamiento existente. Se deben enviar los campos requeridos y sus valores válidos.
 
 **Respuesta:** `200 OK`
 
 Ejemplo:
 
 ```bash
-curl -X PUT http://127.0.0.1:5000/avistamientos/1 -H "Content-Type: application/json" -d "{\"especie\":\"Colibrí\",\"lugar\":\"Jardín Botánico\",\"fecha\":\"2026-10-07\",\"observador\":\"Ana\"}"
+curl -X PUT http://127.0.0.1:5000/avistamientos/1 -H "Content-Type: application/json" -d "{\"especie\":\"Colibrí\",\"lugar\":\"Jardín Botánico\",\"fecha\":\"2026-10-21\",\"observador\":\"Ana\"}"
 ```
 
-Respuesta:
+Si los datos son inválidos, responde `400 Bad Request`. Si el ID no existe, responde `404 Not Found`.
 
-```json
-{
-    "id": 1,
-    "especie": "Colibrí",
-    "lugar": "Jardín Botánico",
-    "fecha": "2026-10-07",
-    "observador": "Ana"
-}
-```
+### DELETE `/avistamientos/{id}`
 
-Si el ID no existe:
-
-**Respuesta:** `404 Not Found`
-
-```json
-{
-    "error": "Avistamiento no encontrado"
-}
-```
-
-### DELETE /avistamientos/{id}
-
-Permite eliminar un avistamiento utilizando su ID.
+Elimina un avistamiento utilizando su ID.
 
 **Respuesta:** `200 OK`
 
@@ -269,23 +223,13 @@ Respuesta:
 
 ```json
 {
-    "mensaje": "Avistamiento eliminado correctamente"
+  "mensaje": "Avistamiento eliminado correctamente"
 }
 ```
 
-Si el ID no existe:
+Si el ID no existe, responde `404 Not Found`.
 
-**Respuesta:** `404 Not Found`
-
-```json
-{
-    "error": "Avistamiento no encontrado"
-}
-```
-
-## Endpoint adicional: Resumen
-
-### GET /avistamientos/resumen
+### GET `/avistamientos/resumen`
 
 Muestra la cantidad de avistamientos registrados por cada especie.
 
@@ -297,42 +241,79 @@ Ejemplo:
 curl http://127.0.0.1:5000/avistamientos/resumen
 ```
 
-Respuesta:
+La respuesta es una lista con la especie y la cantidad de registros encontrados.
 
-```json
-[
-    {
-        "cantidad": 1,
-        "especie": "Águila"
-    },
-    {
-        "cantidad": 1,
-        "especie": "Colibrí"
-    }
-]
+## Pruebas automatizadas
+
+Para verificar el funcionamiento del proyecto se utilizaron Pytest y el cliente de pruebas de Flask.
+
+Las pruebas están organizadas en la carpeta `tests`:
+
+- `test_validador.py`: contiene las pruebas unitarias para comprobar las reglas de validación de los datos.
+- `test_api.py`: contiene las pruebas de integración para verificar los endpoints, sus códigos de respuesta y las operaciones sobre los registros.
+
+### Ejecutar todas las pruebas
+
+Desde la carpeta principal del proyecto, ejecuta:
+
+```powershell
+python -m pytest -v
 ```
+
+### Resultado de las pruebas
+
+En la última ejecución se obtuvieron los siguientes resultados:
+
+- Pruebas aprobadas: **24 de 24**.
+- No se registraron pruebas fallidas.
+
+## Cobertura del código
+
+Para medir la cobertura de las pruebas se utilizó pytest-cov.
+
+Ejecuta el siguiente comando:
+
+```powershell
+python -m pytest --cov=app --cov=validador --cov-report=term-missing
+```
+
+En el informe se muestran las instrucciones ejecutadas, las que quedaron sin cubrir y el porcentaje de cobertura de cada archivo.
+
+### Últimos resultados obtenidos
+
+| Archivo | Cobertura |
+|---|---:|
+| `app.py` | 97 % |
+| `validador.py` | 100 % |
+| **Cobertura total** | **98 %** |
+
+Las dos líneas que quedaron sin cubrir corresponden al bloque que crea la tabla e inicia el servidor cuando `app.py` se ejecuta directamente. Las pruebas de los endpoints utilizan el cliente de pruebas de Flask y no necesitan iniciar el servidor real.
 
 ## Estructura del proyecto
 
 ```text
 api-avistamientos/
-│
 ├── app.py
 ├── database.py
+├── validador.py
 ├── avistamientos.db
 ├── README.md
 ├── .gitignore
-└── .venv/
+└── tests/
+    ├── test_api.py
+    └── test_validador.py
 ```
 
 ### Descripción de los archivos
 
 - `app.py`: contiene la aplicación Flask y los endpoints de la API.
-- `database.py`: contiene la conexión y creación de la base de datos SQLite.
-- `avistamientos.db`: almacena los datos de los avistamientos.
+- `database.py`: contiene la conexión y la creación de la tabla de SQLite.
+- `validador.py`: contiene las reglas para validar los datos de los avistamientos.
+- `avistamientos.db`: almacena los registros de la base de datos.
+- `tests/test_api.py`: contiene las pruebas de integración de la API.
+- `tests/test_validador.py`: contiene las pruebas unitarias del validador.
 - `README.md`: contiene la documentación del proyecto.
 - `.gitignore`: indica los archivos y carpetas que Git no debe subir al repositorio.
-- `.venv/`: contiene el entorno virtual de Python.
 
 ## Repositorio
 
@@ -342,9 +323,9 @@ https://github.com/lunaa06/api-avistamientos
 
 ## IA utilizada
 
-Para el desarrollo de este proyecto se utilizó ChatGPT (GPT-5.6) y Gemini (3.6 Flash lite ) como herramientas de apoyo para comprender conceptos, estructurar el código, realizar pruebas y solucionar errores durante el desarrollo.
+Para el desarrollo de este proyecto se utilizaron ChatGPT y Gemini como herramientas de apoyo para comprender conceptos, estructurar el código, preparar pruebas y solucionar errores durante el desarrollo.
 
-La herramienta de IA fue utilizada como apoyo, comprendiendo y verificando el funcionamiento del código implementado.
+Las herramientas de inteligencia artificial se utilizaron como apoyo al proceso de aprendizaje, revisando y verificando el funcionamiento del código implementado.
 
 ## Autora
 
