@@ -274,46 +274,61 @@ Para medir la cobertura de las pruebas se utilizó pytest-cov.
 Ejecuta el siguiente comando:
 
 ```powershell
-python -m pytest --cov=app --cov=validador --cov-report=term-missing
+python -m pytest --cov=avistamientos --cov=app --cov=validador --cov-report=term-missing
 ```
 
 En el informe se muestran las instrucciones ejecutadas, las que quedaron sin cubrir y el porcentaje de cobertura de cada archivo.
 
 ### Últimos resultados obtenidos
 
-| Archivo | Cobertura |
+| Archivo o módulo | Cobertura |
 |---|---:|
-| `app.py` | 97 % |
-| `validador.py` | 100 % |
+| `app.py` | 88 % |
+| Rutas web | 100 % |
+| Casos de uso | 100 % |
+| Entidad y validador del dominio | 100 % |
+| Repositorio SQLite | 100 % |
+| Contrato del repositorio | 0 % |
 | **Cobertura total** | **98 %** |
 
-Las dos líneas que quedaron sin cubrir corresponden al bloque que crea la tabla e inicia el servidor cuando `app.py` se ejecuta directamente. Las pruebas de los endpoints utilizan el cliente de pruebas de Flask y no necesitan iniciar el servidor real.
+Estos resultados corresponden a la ejecución posterior al refactor en la rama `taller5-clean-architecture`, con Python 3.14.6, pytest 9.2.0 y pytest-cov 7.1.0. Se analizaron 182 sentencias y quedaron 4 sin cubrir. El porcentaje del contrato del repositorio es 0 % porque su archivo declara una interfaz/protocolo y no contiene lógica de ejecución que las pruebas necesiten invocar.
 
 ## Estructura del proyecto
+
+En la rama `taller5-clean-architecture`, la API está organizada con Clean Architecture:
 
 ```text
 api-avistamientos/
 ├── app.py
 ├── database.py
 ├── validador.py
-├── avistamientos.db
-├── README.md
-├── .gitignore
+├── avistamientos/
+│   ├── domain/
+│   │   ├── entities/avistamiento.py
+│   │   └── services/validador.py
+│   ├── application/
+│   │   ├── ports/avistamiento_repository.py
+│   │   └── use_cases/avistamientos.py
+│   ├── adapters/web/routes.py
+│   └── infrastructure/persistence/sqlite_avistamiento_repository.py
+├── docs/
+│   └── taller5_clean_architecture.md
 └── tests/
     ├── test_api.py
     └── test_validador.py
 ```
 
-### Descripción de los archivos
+### Descripción de los archivos y capas
 
-- `app.py`: contiene la aplicación Flask y los endpoints de la API.
-- `database.py`: contiene la conexión y la creación de la tabla de SQLite.
-- `validador.py`: contiene las reglas para validar los datos de los avistamientos.
-- `avistamientos.db`: almacena los registros de la base de datos.
-- `tests/test_api.py`: contiene las pruebas de integración de la API.
-- `tests/test_validador.py`: contiene las pruebas unitarias del validador.
-- `README.md`: contiene la documentación del proyecto.
-- `.gitignore`: indica los archivos y carpetas que Git no debe subir al repositorio.
+- `app.py`: crea Flask y conecta los componentes.
+- `database.py`: conserva la conexión y creación de la tabla SQLite.
+- `avistamientos/domain`: contiene la entidad y las reglas de validación.
+- `avistamientos/application`: define el contrato del repositorio y coordina los casos de uso.
+- `avistamientos/adapters/web`: recibe las solicitudes HTTP mediante Flask.
+- `avistamientos/infrastructure/persistence`: implementa las operaciones de persistencia con SQLite.
+- `validador.py`: mantiene compatibilidad con las pruebas y código que importan el validador desde el módulo raíz.
+- `tests`: contiene las pruebas de integración de la API y las pruebas unitarias del validador.
+- `docs/taller5_clean_architecture.md`: contiene la investigación y el informe del taller.
 
 ## Repositorio
 
