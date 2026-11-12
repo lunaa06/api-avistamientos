@@ -2,7 +2,7 @@ from avistamientos.domain.entities import Avistamiento
 
 
 class AvistamientoUseCases:
-    """Coordina las operaciones de la API sin conocer Flask ni SQLite."""
+    """Coordina las acciones de la API sin depender de Flask ni de SQLite."""
 
     def __init__(self, repository, validator):
         self.repository = repository
@@ -15,18 +15,31 @@ class AvistamientoUseCases:
         return self.repository.obtener(identificador)
 
     def registrar(self, data):
-        error = self.validator.validate(data)
+        error = self.validator.validar(data)
         if error:
             raise ValueError(error)
-        return self.repository.guardar(self._normalizar(data))
+        entidad = Avistamiento(
+            especie=data["especie"].strip(),
+            lugar=data["lugar"].strip(),
+            fecha=data["fecha"],
+            observador=data["observador"].strip(),
+        )
+        return self.repository.guardar(entidad)
 
     def actualizar(self, identificador, data):
-        error = self.validator.validate(data)
+        error = self.validator.validar(data)
         if error:
             raise ValueError(error)
         if self.repository.obtener(identificador) is None:
             return None
-        return self.repository.actualizar(identificador, self._normalizar(data))
+        entidad = Avistamiento(
+            especie=data["especie"].strip(),
+            lugar=data["lugar"].strip(),
+            fecha=data["fecha"],
+            observador=data["observador"].strip(),
+            id=identificador,
+        )
+        return self.repository.actualizar(identificador, entidad)
 
     def eliminar(self, identificador):
         if self.repository.obtener(identificador) is None:
@@ -36,12 +49,3 @@ class AvistamientoUseCases:
 
     def resumen(self):
         return self.repository.resumen()
-
-    @staticmethod
-    def _normalizar(data):
-        return {
-            "especie": data["especie"].strip(),
-            "lugar": data["lugar"].strip(),
-            "fecha": data["fecha"],
-            "observador": data["observador"].strip(),
-        }
