@@ -188,3 +188,22 @@ Cockburn, A. (2005). *Hexagonal architecture: The original 2005 article*. https:
 Martin, R. C. (2012, 13 de agosto). *The Clean Architecture*. The Clean Code Blog. https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
 
 Palermo, J. (2008, 29 de julio). *The Onion Architecture: Part 1*. Programming with Palermo. https://jeffreypalermo.com/2008/07/the-onion-architecture-part-1/
+
+
+---
+
+## Estado del refactor en la rama `taller5-clean-architecture`
+
+Se comenzó la reorganización del código en esta rama, sin modificar `main`. La estructura implementada hasta este punto separa:
+
+- `avistamientos/domain/entities/avistamiento.py`: entidad del dominio.
+- `avistamientos/domain/services/validador.py`: reglas de validación y reloj.
+- `avistamientos/application/ports/avistamiento_repository.py`: contrato de persistencia.
+- `avistamientos/application/use_cases/avistamientos.py`: coordinación de las operaciones de la aplicación.
+- `avistamientos/infrastructure/persistence/sqlite_avistamiento_repository.py`: implementación con SQLite.
+- `avistamientos/adapters/web/routes.py`: rutas HTTP mediante Flask.
+- `app.py`: composición de los componentes y creación de la aplicación.
+
+El archivo raíz `validador.py` conserva una importación de compatibilidad para las pruebas que ya lo utilizaban. La aplicación Flask utiliza el validador ubicado en el dominio.
+
+**Pendiente de verificación local:** ejecutar la suite completa de pruebas en la rama, revisar la cobertura y comparar las respuestas HTTP con las de la versión anterior. Hasta contar con esas salidas no se afirma que el refactor esté validado. También debe revisarse que la estructura local descargada corresponda a esta rama antes de continuar el trabajo.
