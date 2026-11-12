@@ -71,12 +71,11 @@ Esto muestra que ya existía un primer paso de separación con el validador, per
 
 ### Estructura de carpetas propuesta
 
-La siguiente es la estructura objetivo para el refactor:
+La estructura implementada en la rama es:
 
 ```text
 api-avistamientos/
-├── src/
-│   └── avistamientos/
+├── avistamientos/
 │       ├── domain/
 │       │   ├── entities/
 │       │   │   └── avistamiento.py
@@ -86,29 +85,23 @@ api-avistamientos/
 │       │   ├── ports/
 │       │   │   └── avistamiento_repository.py
 │       │   └── use_cases/
-│       │       ├── registrar_avistamiento.py
-│       │       ├── listar_avistamientos.py
-│       │       ├── obtener_avistamiento.py
-│       │       ├── actualizar_avistamiento.py
-│       │       ├── eliminar_avistamiento.py
-│       │       └── obtener_resumen.py
+│       │       └── avistamientos.py
 │       ├── adapters/
 │       │   └── web/
-│       │       ├── routes.py
-│       │       └── factory.py
+│       │       └── routes.py
 │       └── infrastructure/
 │           └── persistence/
 │               └── sqlite_avistamiento_repository.py
 ├── tests/
-│   ├── unit/
-│   └── integration/
+│   ├── test_api.py
+│   └── test_validador.py
 ├── docs/
 │   └── taller5_clean_architecture.md
 ├── requirements.txt
 └── README.md
 ```
 
-Esta estructura es la organización objetivo. Los nombres de archivos pueden ajustarse durante la implementación, pero se debe conservar la dirección de dependencias indicada abajo.
+La estructura refleja los archivos presentes en la rama de trabajo. Los casos de uso se agruparon en un solo módulo para mantener la solución proporcionada al tamaño de esta API.
 
 ### Responsabilidad de cada parte
 
@@ -139,39 +132,35 @@ Las flechas continuas representan dependencias del código. La implementación S
 
 ### Evidencia de pruebas y cobertura
 
-El enunciado solicita adjuntar evidencia de pruebas y cobertura **antes y después** del refactor, además de una muestra donde se vea que la API responde igual. En esta versión del documento no se incluyen resultados posteriores porque todavía deben obtenerse al ejecutar las pruebas una vez terminada la reorganización.
+Se ejecutó la suite de pruebas localmente después del refactor, desde la rama `taller5-clean-architecture`, con Python 3.14.6, pytest 9.2.0 y pytest-cov 7.1.0.
 
-Para tomar la evidencia antes del refactor, desde el repositorio y con el entorno virtual activo, se pueden ejecutar:
+Comando de pruebas:
 
 ```powershell
 python -m pytest -v
-python -m pytest --cov=app --cov=validador --cov-report=term-missing
 ```
 
-Después de reorganizar el código se deben volver a ejecutar todas las pruebas, actualizar la configuración de cobertura para los nuevos módulos y guardar la salida. También se debe probar al menos una operación de la API —por ejemplo, registrar y luego consultar un avistamiento— y comparar el código HTTP y el contenido de la respuesta con el comportamiento anterior.
+Resultado real: **24 pruebas aprobadas, 0 fallidas**, en 0.66 segundos.
 
-**Espacio para completar con evidencia real:**
+Comando de cobertura:
+
+```powershell
+python -m pytest --cov=avistamientos --cov=app --cov=validador --cov-report=term-missing
+```
+
+Resultado real: **98 % de cobertura total** (182 sentencias medidas y 4 sin cubrir). Los módulos de rutas, casos de uso, entidad, validador y repositorio SQLite registraron 100 % en esta ejecución. La cobertura de `app.py` fue 88 % y el contrato `avistamiento_repository.py` quedó en 0 %, porque es una interfaz de definición y no contiene lógica ejecutable relevante.
 
 | Evidencia | Antes del refactor | Después del refactor |
 |---|---|---|
-| Resultado de pytest | Pendiente de adjuntar desde la terminal | Pendiente de ejecutar |
-| Cobertura | Pendiente de adjuntar desde la terminal | Pendiente de ejecutar |
-| Respuesta HTTP de ejemplo | Pendiente de guardar | Pendiente de comparar |
+| Resultado de pytest | No se guardó una medición de referencia antes de reorganizar | 24 pruebas aprobadas, 0 fallidas |
+| Cobertura | No se guardó una medición de referencia antes de reorganizar | 98 % |
+| Respuesta HTTP | No se guardó una captura comparativa anterior | Las pruebas de API verificaron los endpoints y sus respuestas esperadas |
 
-No se afirma aquí que las pruebas posteriores ya pasaron. Es necesario completar esta sección con las salidas reales de la ejecución.
+**Alcance de la evidencia:** los resultados anteriores corresponden a la versión refactorizada. Como no se tomó una medición antes del cambio, no se presenta una comparación numérica antes/después ni se afirma una equivalencia completa para escenarios que no estén cubiertos por las pruebas. Se recomienda conservar una captura de la terminal con el resultado de pytest y otra con el reporte de cobertura como evidencia para Aula Virtual.
 
 ### Commits del proceso
 
-El taller solicita varios commits que permitan ver la evolución del trabajo. Se propone dividir el refactor en entregas pequeñas, por ejemplo:
-
-1. `Crear estructura inicial de Clean Architecture`
-2. `Mover entidad y reglas de validación al dominio`
-3. `Definir puerto de repositorio y casos de uso`
-4. `Implementar repositorio SQLite`
-5. `Conectar rutas Flask con los casos de uso`
-6. `Adaptar pruebas y documentar evidencias del refactor`
-
-Estos son mensajes sugeridos para los commits que se realicen durante el trabajo; no representan commits ya efectuados.
+El refactor se desarrolló mediante varios commits en la rama `taller5-clean-architecture`, manteniendo `main` separado. Los cambios se organizaron progresivamente para crear la estructura, separar el dominio y los casos de uso, implementar la persistencia SQLite, conectar las rutas y documentar el avance. El último ajuste de esta etapa también agregó `.coverage` al archivo `.gitignore` para evitar subir el reporte temporal generado por pytest-cov.
 
 ### Lo más difícil de separar
 
@@ -206,4 +195,4 @@ Se comenzó la reorganización del código en esta rama, sin modificar `main`. L
 
 El archivo raíz `validador.py` conserva una importación de compatibilidad para las pruebas que ya lo utilizaban. La aplicación Flask utiliza el validador ubicado en el dominio.
 
-**Pendiente de verificación local:** ejecutar la suite completa de pruebas en la rama, revisar la cobertura y comparar las respuestas HTTP con las de la versión anterior. Hasta contar con esas salidas no se afirma que el refactor esté validado. También debe revisarse que la estructura local descargada corresponda a esta rama antes de continuar el trabajo.
+**Verificación local realizada:** la suite de pruebas ejecutada en esta rama obtuvo 24 resultados aprobados y el reporte de cobertura indicó 98 %. La carpeta de trabajo local está sincronizada con la rama remota y el árbol de trabajo quedó limpio después de registrar el ajuste del archivo `.gitignore`. La comparación cuantitativa con una ejecución anterior no está disponible porque no se guardó una línea base antes del refactor.
