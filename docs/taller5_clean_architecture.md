@@ -75,35 +75,23 @@ La siguiente es la estructura objetivo para el refactor:
 
 ```text
 api-avistamientos/
-├── src/
-│   └── avistamientos/
-│       ├── domain/
-│       │   ├── entities/
-│       │   │   └── avistamiento.py
-│       │   └── services/
-│       │       └── validador.py
-│       ├── application/
-│       │   ├── ports/
-│       │   │   └── avistamiento_repository.py
-│       │   └── use_cases/
-│       │       ├── registrar_avistamiento.py
-│       │       ├── listar_avistamientos.py
-│       │       ├── obtener_avistamiento.py
-│       │       ├── actualizar_avistamiento.py
-│       │       ├── eliminar_avistamiento.py
-│       │       └── obtener_resumen.py
-│       ├── adapters/
-│       │   └── web/
-│       │       ├── routes.py
-│       │       └── factory.py
-│       └── infrastructure/
-│           └── persistence/
-│               └── sqlite_avistamiento_repository.py
+├── app.py
+├── avistamientos/
+│   ├── domain/
+│   │   ├── entities.py
+│   │   ├── validation.py
+│   │   ├── entities/avistamiento.py
+│   │   └── services/validador.py
+│   ├── application/
+│   │   ├── ports/avistamiento_repository.py
+│   │   └── use_cases/avistamientos.py
+│   ├── adapters/web/app_factory.py
+│   └── infrastructure/persistence/sqlite_repository.py
 ├── tests/
-│   ├── unit/
-│   └── integration/
-├── docs/
-│   └── taller5_clean_architecture.md
+│   ├── test_api.py
+│   ├── test_use_cases.py
+│   └── test_validador.py
+├── docs/taller5_clean_architecture.md
 ├── requirements.txt
 └── README.md
 ```
@@ -162,16 +150,15 @@ Después del refactor, las pruebas de integración usan una base SQLite en memor
 
 ### Commits del proceso
 
-El taller solicita varios commits que permitan ver la evolución del trabajo. Se propone dividir el refactor en entregas pequeñas, por ejemplo:
+El historial del repositorio ya muestra commits separados para reflejar la evolución del trabajo. Entre ellos se encuentran:
 
-1. `Crear estructura inicial de Clean Architecture`
-2. `Mover entidad y reglas de validación al dominio`
-3. `Definir puerto de repositorio y casos de uso`
-4. `Implementar repositorio SQLite`
-5. `Conectar rutas Flask con los casos de uso`
-6. `Adaptar pruebas y documentar evidencias del refactor`
-
-Estos son mensajes sugeridos para los commits que se realicen durante el trabajo; no representan commits ya efectuados.
+1. `Crear dominio y casos de uso de Clean Architecture`
+2. `Implementar persistencia SQLite y adaptador web`
+3. `Actualizar pruebas de integración para Clean Architecture`
+4. `Agregar pruebas unitarias de los casos de uso`
+5. `Documentar estructura Clean Architecture del Taller 5`
+6. `Agregar dependencias para ejecutar la API y sus pruebas`
+7. `Configurar ejecución automática de pruebas con GitHub Actions`
 
 ### Lo más difícil de separar
 
