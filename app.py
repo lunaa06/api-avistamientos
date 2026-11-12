@@ -1,175 +1,25 @@
-from flask import Flask, request
+from flask import Flask
+
 from database import conectar, crear_tabla
-from validador import ValidadorDeAvistamiento
-
-app = Flask(__name__)
-validador = ValidadorDeAvistamiento()
-
-
-@app.route("/")
-def inicio():
-    return {"mensaje": "API de avistamientos funcionando"}
+from avistamientos.adapters.web.routes import crear_blueprint
+from avistamientos.application.use_cases.avistamientos import AvistamientoUseCases
+from avistamientos.domain.services.validador import ValidadorDeAvistamiento
+from avistamientos.infrastructure.persistence.sqlite_avistamiento_repository import (
+    SQLiteAvistamientoRepository,
+)
 
 
-@app.route("/avistamientos", methods=["GET"])
-def listar_avistamientos():
-    conexion = conectar()
-
-    avistamientos = conexion.execute(
-        "SELECT * FROM avistamientos"
-    ).fetchall()
-
-    conexion.close()
-
-    resultado = [dict(avistamiento) for avistamiento in avistamientos]
-
-    return resultado, 200
+def crear_app():
+    """Construye Flask y conecta los adaptadores con los casos de uso."""
+    aplicacion = Flask(__name__)
+    repositorio = SQLiteAvistamientoRepository(lambda: conectar())
+    validador = ValidadorDeAvistamiento()
+    casos_de_uso = AvistamientoUseCases(repositorio, validador)
+    aplicacion.register_blueprint(crear_blueprint(casos_de_uso))
+    return aplicacion
 
 
-@app.route("/avistamientos/<int:id>", methods=["GET"])
-def obtener_avistamiento(id):
-    conexion = conectar()
-
-    avistamiento = conexion.execute(
-        "SELECT * FROM avistamientos WHERE id = ?",
-        (id,)
-    ).fetchone()
-
-    conexion.close()
-
-    if avistamiento is None:
-        return {"error": "Avistamiento no encontrado"}, 404
-
-    return dict(avistamiento), 200
-
-
-
-@app.route("/avistamientos/<int:id>", methods=["PUT"])
-def actualizar_avistamiento(id):
-    datos = request.get_json(silent=True)
-
-    error = validador.validar(datos)
-
-    if error:
-        return {"error": error}, 400
-
-    conexion = conectar()
-
-
-    avistamiento = conexion.execute(
-        "SELECT * FROM avistamientos WHERE id = ?",
-        (id,)
-    ).fetchone()
-
-    if avistamiento is None:
-        conexion.close()
-        return {"error": "Avistamiento no encontrado"}, 404
-
-    conexion.execute(
-        """
-        UPDATE avistamientos
-        SET especie = ?, lugar = ?, fecha = ?, observador = ?
-        WHERE id = ?
-        """,
-        (
-            datos["especie"],
-            datos["lugar"],
-            datos["fecha"],
-            datos["observador"],
-            id
-        )
-    )
-
-    conexion.commit()
-
-    actualizado = conexion.execute(
-        "SELECT * FROM avistamientos WHERE id = ?",
-        (id,)
-    ).fetchone()
-
-    conexion.close()
-
-    return dict(actualizado), 200
-@app.route("/avistamientos/<int:id>", methods=["DELETE"])
-def eliminar_avistamiento(id):
-    conexion = conectar()
-
-    avistamiento = conexion.execute(
-        "SELECT * FROM avistamientos WHERE id = ?",
-        (id,)
-    ).fetchone()
-
-    if avistamiento is None:
-        conexion.close()
-        return {"error": "Avistamiento no encontrado"}, 404
-
-    conexion.execute(
-        "DELETE FROM avistamientos WHERE id = ?",
-        (id,)
-    )
-
-    conexion.commit()
-    conexion.close()
-
-    return {"mensaje": "Avistamiento eliminado correctamente"}, 200
-
-
-@app.route("/avistamientos", methods=["POST"])
-def crear_avistamiento():
-    datos = request.get_json(silent=True)
-
-    print("DATOS RECIBIDOS:", datos)
-
-    error = validador.validar(datos)
-
-    if error:
-        return {"error": error}, 400
-
-    conexion = conectar()
-
-
-    cursor = conexion.execute(
-        """
-        INSERT INTO avistamientos (especie, lugar, fecha, observador)
-        VALUES (?, ?, ?, ?)
-        """,
-        (
-            datos["especie"],
-            datos["lugar"],
-            datos["fecha"],
-            datos["observador"]
-        )
-    )
-
-    conexion.commit()
-
-    id_nuevo = cursor.lastrowid
-
-    avistamiento = conexion.execute(
-        "SELECT * FROM avistamientos WHERE id = ?",
-        (id_nuevo,)
-    ).fetchone()
-
-    conexion.close()
-
-    return dict(avistamiento), 201
-@app.route("/avistamientos/resumen", methods=["GET"])
-def resumen_avistamientos():
-    conexion = conectar()
-
-    resumen = conexion.execute(
-        """
-        SELECT especie, COUNT(*) AS cantidad
-        FROM avistamientos
-        GROUP BY especie
-        """
-    ).fetchall()
-
-    conexion.close()
-
-    resultado = [dict(item) for item in resumen]
-
-    return resultado, 200
+app = crear_app()
 
 if __name__ == "__main__":
     crear_tabla()
