@@ -332,3 +332,48 @@ Las herramientas de inteligencia artificial se utilizaron como apoyo al proceso 
 **Ana Luna**
 
 Proyecto realizado para la asignatura de Ingeniería de Software 2.
+
+
+## Taller 5 – Clean Architecture
+
+La API se reorganizó para separar las reglas del negocio de las tecnologías externas. Se eligió Clean Architecture para que Flask y SQLite funcionen como detalles reemplazables y los casos de uso no dependan directamente de ellos.
+
+### Organización actual
+
+```text
+api-avistamientos/
+├── app.py
+├── avistamientos/
+│   ├── domain/
+│   │   ├── entities.py
+│   │   └── validation.py
+│   ├── application/
+│   │   ├── ports/avistamiento_repository.py
+│   │   └── use_cases/avistamientos.py
+│   ├── adapters/web/app_factory.py
+│   └── infrastructure/persistence/sqlite_repository.py
+├── tests/
+│   ├── test_api.py
+│   ├── test_use_cases.py
+│   └── test_validador.py
+└── docs/taller5_clean_architecture.md
+```
+
+- **Dominio:** representa los conceptos y las reglas de validación de los avistamientos.
+- **Aplicación:** coordina los casos de uso y define el contrato del repositorio.
+- **Adaptador web:** recibe las solicitudes HTTP y devuelve las respuestas JSON.
+- **Infraestructura:** implementa el contrato de persistencia con SQLite.
+- **app.py:** conserva el comando habitual para iniciar la API.
+
+### Ejecutar las pruebas después del refactor
+
+Con el entorno virtual activo y las dependencias instaladas:
+
+```powershell
+python -m pytest -v
+python -m pytest --cov=app --cov=validador --cov=avistamientos --cov-report=term-missing
+```
+
+El porcentaje histórico de 98 % descrito en la sección anterior corresponde al código antes del refactor. La cobertura posterior debe obtenerse con los comandos anteriores y reportarse con su salida real; no se debe reutilizar el porcentaje anterior como si fuera el resultado nuevo.
+
+El documento completo de investigación, la arquitectura, el diagrama de dependencias y las instrucciones de evidencia están en [docs/taller5_clean_architecture.md](docs/taller5_clean_architecture.md).
