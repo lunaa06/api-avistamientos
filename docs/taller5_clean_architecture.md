@@ -108,7 +108,7 @@ api-avistamientos/
 └── README.md
 ```
 
-Esta estructura es la organización objetivo. Los nombres de archivos pueden ajustarse durante la implementación, pero se debe conservar la dirección de dependencias indicada abajo.
+La estructura ya fue incorporada al repositorio. La entidad y las reglas de validación están en el paquete `avistamientos/domain/`; el contrato y los casos de uso están en `avistamientos/application/`; Flask se conecta desde `avistamientos/adapters/web/app_factory.py`; y SQLite se implementa en `avistamientos/infrastructure/persistence/sqlite_repository.py`. El archivo raíz `app.py` se conserva como punto de entrada.
 
 ### Responsabilidad de cada parte
 
@@ -139,26 +139,26 @@ Las flechas continuas representan dependencias del código. La implementación S
 
 ### Evidencia de pruebas y cobertura
 
-El enunciado solicita adjuntar evidencia de pruebas y cobertura **antes y después** del refactor, además de una muestra donde se vea que la API responde igual. En esta versión del documento no se incluyen resultados posteriores porque todavía deben obtenerse al ejecutar las pruebas una vez terminada la reorganización.
+El enunciado solicita adjuntar evidencia de pruebas y cobertura **antes y después** del refactor, además de una muestra donde se vea que la API responde igual. El README conserva el resultado histórico del taller anterior: 24 pruebas aprobadas y 98 % de cobertura (97 % en `app.py` y 100 % en `validador.py`). Ese resultado corresponde al código anterior, no al refactor.
 
 Para tomar la evidencia antes del refactor, desde el repositorio y con el entorno virtual activo, se pueden ejecutar:
 
 ```powershell
 python -m pytest -v
-python -m pytest --cov=app --cov=validador --cov-report=term-missing
+python -m pytest --cov=app --cov=validador --cov=avistamientos --cov-report=term-missing
 ```
 
-Después de reorganizar el código se deben volver a ejecutar todas las pruebas, actualizar la configuración de cobertura para los nuevos módulos y guardar la salida. También se debe probar al menos una operación de la API —por ejemplo, registrar y luego consultar un avistamiento— y comparar el código HTTP y el contenido de la respuesta con el comportamiento anterior.
+Después del refactor, las pruebas de integración usan una base SQLite en memoria y se añadieron pruebas de los casos de uso con un repositorio en memoria. Para generar la evidencia posterior, ejecutar `python -m pytest -v` y `python -m pytest --cov=app --cov=validador --cov=avistamientos --cov-report=term-missing`. También se debe iniciar la API con `python app.py` y probar el registro y la consulta de un avistamiento, guardando las respuestas HTTP para compararlas con las del taller anterior.
 
 **Espacio para completar con evidencia real:**
 
 | Evidencia | Antes del refactor | Después del refactor |
 |---|---|---|
-| Resultado de pytest | Pendiente de adjuntar desde la terminal | Pendiente de ejecutar |
-| Cobertura | Pendiente de adjuntar desde la terminal | Pendiente de ejecutar |
+| Resultado de pytest | 24 pruebas aprobadas, según el README del taller anterior | Ejecutar y adjuntar salida actual |
+| Cobertura | 98 %, según el README del taller anterior | Ejecutar y adjuntar reporte actual |
 | Respuesta HTTP de ejemplo | Pendiente de guardar | Pendiente de comparar |
 
-No se afirma aquí que las pruebas posteriores ya pasaron. Es necesario completar esta sección con las salidas reales de la ejecución.
+**Pendiente para cerrar la entrega:** no se ha ejecutado el repositorio desde este entorno conectado a GitHub. Por eso, no se inventa un porcentaje de cobertura ni se afirma que las pruebas posteriores pasaron. La salida real de la terminal y una muestra de respuesta HTTP deben añadirse después de ejecutar los comandos en el computador donde está instalado el proyecto.
 
 ### Commits del proceso
 
