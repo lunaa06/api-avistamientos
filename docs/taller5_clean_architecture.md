@@ -130,9 +130,11 @@ flowchart TD
 
 Las flechas continuas representan dependencias del código. La implementación SQLite satisface el contrato definido en el interior, pero el contrato no conoce SQLite. Por eso, la dirección de las dependencias se mantiene hacia las reglas internas, como propone Martin (2012).
 
-### Evidencia de pruebas y cobertura
+### Evidencia de pruebas, cobertura y comportamiento de la API
 
-Se ejecutó la suite de pruebas localmente después del refactor, desde la rama `taller5-clean-architecture`, con Python 3.14.6, pytest 9.2.0 y pytest-cov 7.1.0.
+Se ejecutaron las pruebas en dos copias separadas del repositorio: la versión anterior, desde la rama `main`, y la versión reorganizada, desde `taller5-clean-architecture`. Las capturas de terminal y navegador se conservaron como evidencia del proceso.
+
+**Versión anterior (rama `main`)**
 
 Comando de pruebas:
 
@@ -140,7 +142,25 @@ Comando de pruebas:
 python -m pytest -v
 ```
 
-Resultado real: **24 pruebas aprobadas, 0 fallidas**, en 0.66 segundos.
+Resultado observado: **28 pruebas aprobadas**, sin fallos.
+
+Comando de cobertura:
+
+```powershell
+python -m pytest --cov=avistamientos --cov=database --cov=validador --cov-report=term-missing
+```
+
+Resultado observado: **98 % de cobertura total**, con 166 sentencias medidas y 3 sin cubrir. La advertencia indicó que el módulo `database` no fue importado durante esa ejecución; por tanto, no se debe interpretar el porcentaje como cobertura de ese módulo.
+
+**Versión reorganizada (rama `taller5-clean-architecture`)**
+
+Comando de pruebas:
+
+```powershell
+python -m pytest -v
+```
+
+Resultado observado: **24 pruebas aprobadas, 0 fallidas**, en 0.66 segundos.
 
 Comando de cobertura:
 
@@ -148,16 +168,31 @@ Comando de cobertura:
 python -m pytest --cov=avistamientos --cov=app --cov=validador --cov-report=term-missing
 ```
 
-Resultado real: **98 % de cobertura total** (182 sentencias medidas y 4 sin cubrir). Los módulos de rutas, casos de uso, entidad, validador y repositorio SQLite registraron 100 % en esta ejecución. La cobertura de `app.py` fue 88 % y el contrato `avistamiento_repository.py` quedó en 0 %, porque es una interfaz de definición y no contiene lógica ejecutable relevante.
+Resultado observado: **98 % de cobertura total**, con 182 sentencias medidas y 4 sin cubrir. En esa ejecución, las rutas, los casos de uso, la entidad, el validador y el repositorio SQLite registraron 100 %. `app.py` registró 88 % y el contrato `avistamiento_repository.py` registró 0 %, porque define un protocolo y no contiene lógica de negocio ejecutable.
+
+**Comparación de una respuesta de la API**
+
+Se consultó el endpoint `GET /avistamientos/resumen` en ambas versiones. En las dos ejecuciones se obtuvo el mismo resultado:
+
+| Especie | Cantidad |
+|---|---:|
+| Colibrí | 1 |
+| Águila | 1 |
+
+También se comprobó que la ruta raíz `GET /` de la versión anterior respondió con el mensaje `API de avistamientos funcionando`. En la versión reorganizada, la ruta raíz mostró el mismo mensaje.
 
 | Evidencia | Antes del refactor | Después del refactor |
-|---|---|---|
-| Resultado de pytest | No se guardó una medición de referencia antes de reorganizar | 24 pruebas aprobadas, 0 fallidas |
-| Cobertura | No se guardó una medición de referencia antes de reorganizar | 98 % |
-| Respuesta HTTP | No se guardó una captura comparativa anterior | Las pruebas de API verificaron los endpoints y sus respuestas esperadas |
+|---|---:|---:|
+| Pruebas aprobadas | 28 | 24 |
+| Pruebas fallidas | 0 | 0 |
+| Cobertura total reportada | 98 % | 98 % |
+| Sentencias medidas | 166 | 182 |
+| Sentencias sin cubrir | 3 | 4 |
+| Resumen Colibrí | 1 | 1 |
+| Resumen Águila | 1 | 1 |
 
-**Alcance de la evidencia:** los resultados anteriores corresponden a la versión refactorizada. Como no se tomó una medición antes del cambio, no se presenta una comparación numérica antes/después ni se afirma una equivalencia completa para escenarios que no estén cubiertos por las pruebas. Se recomienda conservar una captura de la terminal con el resultado de pytest y otra con el reporte de cobertura como evidencia para Aula Virtual.
-
+Los porcentajes son los que reportó pytest-cov en cada versión. Como las estructuras y los módulos medidos cambiaron con el refactor, el número de sentencias no es directamente equivalente entre las dos mediciones. Lo importante es que las pruebas ejecutadas pasaron y que el endpoint de resumen conservó la respuesta observada en los dos casos. Las capturas de las pruebas, de cobertura y de las respuestas HTTP deben adjuntarse también a la entrega de Aula Virtual.
+ 
 ### Commits del proceso
 
 El refactor se desarrolló mediante varios commits en la rama `taller5-clean-architecture`, manteniendo `main` separado. Los cambios se organizaron progresivamente para crear la estructura, separar el dominio y los casos de uso, implementar la persistencia SQLite, conectar las rutas y documentar el avance. El último ajuste de esta etapa también agregó `.coverage` al archivo `.gitignore` para evitar subir el reporte temporal generado por pytest-cov.
@@ -195,4 +230,4 @@ Se comenzó la reorganización del código en esta rama, sin modificar `main`. L
 
 El archivo raíz `validador.py` conserva una importación de compatibilidad para las pruebas que ya lo utilizaban. La aplicación Flask utiliza el validador ubicado en el dominio.
 
-**Verificación local realizada:** la suite de pruebas ejecutada en esta rama obtuvo 24 resultados aprobados y el reporte de cobertura indicó 98 %. La carpeta de trabajo local está sincronizada con la rama remota y el árbol de trabajo quedó limpio después de registrar el ajuste del archivo `.gitignore`. La comparación cuantitativa con una ejecución anterior no está disponible porque no se guardó una línea base antes del refactor.
+**Verificación local realizada:** la suite de pruebas ejecutada en esta rama obtuvo 24 resultados aprobados y el reporte de cobertura indicó 98 %. La carpeta de trabajo local está sincronizada con la rama remota y el árbol de trabajo quedó limpio después de registrar el ajuste del archivo `.gitignore`. La ejecución de referencia en la versión anterior registró 28 pruebas aprobadas y 98 % de cobertura; la versión reorganizada registró 24 pruebas aprobadas y 98 %. También se comparó el resultado observado del endpoint de resumen, que devolvió Colibrí = 1 y Águila = 1 en ambas versiones.
